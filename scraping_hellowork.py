@@ -6,11 +6,13 @@ import os
 import datetime
 import argparse
 import traceback
+from shutil import which
 
 # Selenium関連のインポート
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+from shutil import which
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -151,7 +153,15 @@ def scrape_after_manual_search(initial_page_url, output_dir, max_pages=None):
     processing_start_time = None # スクレピング処理の実際の開始時間
     try:
         print(f"WebDriverを起動中...")
-        service = ChromeService(ChromeDriverManager().install())
+        # chromedriver が PATH にあるか確認
+        chromedriver_path = which("chromedriver")
+        if chromedriver_path:
+            print(f"PATH に chromedriver が見つかりました: {chromedriver_path}")
+            service = ChromeService(executable_path=chromedriver_path)
+        else:
+            print("chromedriver が PATH に見つからなかったので、webdriver-manager を使用します。")
+            service = ChromeService(ChromeDriverManager().install())
+
         driver = webdriver.Chrome(service=service, options=options)
         driver.implicitly_wait(10) # 要素が見つかるまでの最大待機時間
         print(f"WebDriver起動完了。")
